@@ -8,14 +8,16 @@
 
 
 /**
- * Fonction: uint8_t MCP23x08_init(MCP23x08_t *driver)
+ * @fun: 	uint8_t MCP23x08_init(MCP23x08_t *driver)
  * @brief  	MCP23x08 initialize driver
  * @param  	MCP23x08_t *driver
  * @note
- * @retval 	value of register
+ * @retval 	1 success | 0 error
  */
 uint8_t MCP23x08_init(MCP23x08_t *driver)
 {
+	uint8_t iocon;
+
 	if (driver->com.protocole == MCP23S08_SPI)
 	{
 		osMutexWait(driver->com.mutex, osWaitForever);
@@ -25,19 +27,33 @@ uint8_t MCP23x08_init(MCP23x08_t *driver)
 		osMutexRelease(driver->com.mutex);
 	}
 
+	/* IOCON Config register */
+	MCP23x08_write(driver, MCP23x08_IOCON, driver->config.IOCON);
+	iocon = MCP23x08_read(driver, MCP23x08_IOCON);
+
+	if(iocon != driver->config.IOCON)
+	{
+		iocon = 0; /* Error occured */
+	}
+	else
+	{
+		iocon = 1;
+	}
+
 	MCP23x08_write(driver, MCP23x08_IODIR, driver->config.IODIR);
 	MCP23x08_write(driver, MCP23x08_IPOL, driver->config.IPOL);
 	MCP23x08_write(driver, MCP23x08_GPINTEN, driver->config.GPINTEN);
 	MCP23x08_write(driver, MCP23x08_DEFVAL, driver->config.DEFVAL);
 	MCP23x08_write(driver, MCP23x08_INTCON, driver->config.INTCON);
-	MCP23x08_write(driver, MCP23x08_IOCON, driver->config.IOCON);
 	MCP23x08_write(driver, MCP23x08_GPPU, driver->config.GPPU);
 	MCP23x08_write(driver, MCP23x08_GPIO, driver->config.default_GPIO);
 	MCP23x08_write(driver, MCP23x08_OLAT, driver->config.OLAT);
+
+	return iocon;
 }
 
 /**
- * Fonction: uint8_t MCP23x08_read(MCP23x08_t *driver, MCP23x08_register_t reg)
+ * @fun: 	uint8_t MCP23x08_read(MCP23x08_t *driver, MCP23x08_register_t reg)
  * @brief  	MCP23x08 read specific register
  * @param  	MCP23x08_t *driver
  * @param	MCP23x08_register_t MCP23x08 register
@@ -83,7 +99,7 @@ uint8_t MCP23x08_read(MCP23x08_t *driver, MCP23x08_register_t reg)
 		osMutexRelease(driver->com.mutex);
 	}
 
-	if (driver->com.protocole == MCP23S08_SPI)
+	if (driver->com.protocole == MCP23008_I2C)
 	{
 		osMutexWait(driver->com.mutex, osWaitForever);
 
@@ -102,7 +118,7 @@ uint8_t MCP23x08_read(MCP23x08_t *driver, MCP23x08_register_t reg)
 }
 
 /**
- * Fonction: uint8_t MCP23x08_readport(MCP23x08_t *driver)
+ * @fun: 	uint8_t MCP23x08_readport(MCP23x08_t *driver)
  * @brief  	MCP23x08 read GPIO port
  * @param  	MCP23x08_t *driver
  * @note
@@ -114,7 +130,7 @@ uint8_t MCP23x08_readport(MCP23x08_t *driver)
 }
 
 /**
- * Fonction: void MCP23x08_write(MCP23x08_t *driver, MCP23x08_register_t reg, uint8_t value)
+ * @fun: 	void MCP23x08_write(MCP23x08_t *driver, MCP23x08_register_t reg, uint8_t value)
  * @brief  	MCP23x08 read specific register
  * @param  	MCP23x08_t *driver
  * @param  	MCP23x08_register_t MCP23x08 register
@@ -162,7 +178,7 @@ void MCP23x08_write(MCP23x08_t *driver, MCP23x08_register_t reg, uint8_t value)
 		osMutexRelease(driver->com.mutex);
 	}
 
-	if (driver->com.protocole == MCP23S08_SPI)
+	if (driver->com.protocole == MCP23008_I2C)
 	{
 		osMutexWait(driver->com.mutex, osWaitForever);
 
@@ -175,7 +191,7 @@ void MCP23x08_write(MCP23x08_t *driver, MCP23x08_register_t reg, uint8_t value)
 	}
 }
 /**
- * Fonction: void MCP23x08_writeport(MCP23x08_t *driver, uint8_t value)
+ * @fun: 	void MCP23x08_writeport(MCP23x08_t *driver, uint8_t value)
  * @brief  	MCP23x08 write port
  * @param  	MCP23x08_t *device
  * @param	uint8_t value of port
