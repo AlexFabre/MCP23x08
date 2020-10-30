@@ -2,7 +2,7 @@
  * MCP23x08.h
  *
  *  Created on: 14 oct 2020
- *      Author: j.marcialis
+ *      Author: a.fabre
  */
 
 /*
